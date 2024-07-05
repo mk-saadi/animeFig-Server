@@ -182,6 +182,18 @@ async function run() {
 			res.send(result);
 		});
 
+		app.get("/addedFigure/category", async (req, res) => {
+			const category = req.query.category; // Get the category from the query parameter
+
+			if (!category) {
+				return res.status(400).send({ error: "Category query parameter is required" });
+			}
+
+			const cursor = addedFigureCollection.find({ category: category });
+			const result = await cursor.toArray();
+			res.send(result);
+		});
+
 		app.get("/totalAddedFigure", async (req, res) => {
 			const result = await addedFigureCollection.estimatedDocumentCount();
 			res.send({ totalAddedFigure: result });
@@ -202,11 +214,9 @@ async function run() {
 			if (req.query?.email) {
 				query = { email: req.query.email };
 			}
-
 			if (req.query.search) {
 				query.name = { $regex: req.query.search, $options: "i" };
 			}
-
 			if (req.params.category) {
 				if (
 					req.params.category == "Scale Figures" ||
@@ -219,13 +229,10 @@ async function run() {
 					query.category = { $regex: req.params.category, $options: "i" };
 				}
 			}
-
-			// const limit = parseInt(req.query.limit) || 20;     .limit(limit)
-
 			const result = await addedFigureCollection.find(query).sort({ price: -1 }).toArray();
-
 			res.send(result);
 		});
+		// const limit = parseInt(req.query.limit) || 20;     .limit(limit)
 
 		app.get("/addedFigure/latest", async (req, res) => {
 			const cursor = addedFigureCollection.find().sort({ _id: -1 }).limit(5);
@@ -233,12 +240,12 @@ async function run() {
 			res.send(result);
 		});
 
-		app.get("/addedFigure/:id", async (req, res) => {
-			const id = req.params.id;
-			const query = { _id: new ObjectId(id) };
-			const result = await addedFigureCollection.findOne(query);
-			res.send(result);
-		});
+		// app.get("/addedFigure/:id", async (req, res) => {
+		// 	const id = req.params.id;
+		// 	const query = { _id: new ObjectId(id) };
+		// 	const result = await addedFigureCollection.findOne(query);
+		// 	res.send(result);
+		// });
 
 		app.post("/addedFigure", async (req, res) => {
 			const figure = req.body;
