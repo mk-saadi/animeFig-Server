@@ -41,6 +41,7 @@ router.get("/category", async (req, res) => {
 		img: 1,
 		price: 1,
 		_id: 1,
+		category: 1,
 	};
 	const cursor = addedFigureCollection.find({ category: category }, { projection: projection });
 	const result = await cursor.toArray();
