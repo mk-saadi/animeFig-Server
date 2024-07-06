@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const { ObjectId, client } = require("../db");
-
 const addedFigureCollection = client.db("animeFig").collection("addedFigure");
 
 // # main get function

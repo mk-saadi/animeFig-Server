@@ -1,29 +1,22 @@
 [
 	{
-		"_id": "65c24f29ef593928b9b9de52",
-		"name": "Johnny James",
-		"price": 4500,
-		"quantity": 55,
-		"Manufacturer": "Hobby Max",
-		"category": "Scale Figures",
-		"rating": 4.7
+		"name": "Figma",
+		"img": "https://firebasestorage.googleapis.com/v0/b/animefig-3626c.appspot.com/o/categories%2F01_5d9bd946-981e-4826-9d2d-840c06d20fac.jpg?alt=media&token=d6a145e6-3c0c-42ef-abd2-64d96eb04cbb"
 	},
 	{
-		"_id": "6468dab10adcf51ca51256ce",
-		"name": "HG 1/144 Aerial Gundam (Permet Score 6 Ver)",
-		"price": 426.89,
-		"quantity": 18,
-		"Manufacturer": "Bandai Premium Limited Edition",
-		"category": "Figma",
-		"rating": 4.8
+		"name": "Nendoroid",
+		"img": "https://firebasestorage.googleapis.com/v0/b/animefig-3626c.appspot.com/o/categories%2F3b2705e658bfa363593fd19b73dab7b2-ezgif.com-webp-to-jpg-converter.jpg?alt=media&token=8e8fe077-f6a7-4f9c-ad64-251fc4e4c1e4"
 	},
 	{
-		"_id": "646e3c60725bd7e24bf42127",
-		"name": "Azur Lane Ark Royal 1/7 Scale Figure",
-		"price": 332.59,
-		"quantity": 11,
-		"Manufacturer": "Oriental Forest",
-		"category": "Bishoujo Figures",
-		"rating": 5
+		"name": "Bishoujo Figures",
+		"img": "https://firebasestorage.googleapis.com/v0/b/animefig-3626c.appspot.com/o/categories%2F4a47d84fabb04b20a0e4cf151c1caabb.jpg?alt=media&token=089ae415-35ec-492d-bc49-8a9c8a37a425"
+	},
+	{
+		"name": "Scale Figures",
+		"img": "https://firebasestorage.googleapis.com/v0/b/animefig-3626c.appspot.com/o/categories%2F856220899aea4fc1bc2bbeb6cafdc726.jpg?alt=media&token=4163725b-34d1-4729-821f-fed02ec9d017"
+	},
+	{
+		"name": "Plushies",
+		"img": "https://firebasestorage.googleapis.com/v0/b/animefig-3626c.appspot.com/o/categories%2Fbf349386acd2d1409a5e32fb1576ec3e.jpg?alt=media&token=c46dec39-78a5-40bc-ad0b-10d5ea9cda43"
 	}
 ]
