@@ -36,7 +36,13 @@ router.get("/category", async (req, res) => {
 	if (!category) {
 		return res.status(400).send({ error: "Category query parameter is required" });
 	}
-	const cursor = addedFigureCollection.find({ category: category });
+	const projection = {
+		name: 1,
+		img: 1,
+		price: 1,
+		_id: 1,
+	};
+	const cursor = addedFigureCollection.find({ category: category }, { projection: projection });
 	const result = await cursor.toArray();
 	res.send(result);
 });
