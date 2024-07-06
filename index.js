@@ -47,7 +47,7 @@ async function run() {
 		app.use("/categories", categoriesRoutes);
 
 		await client.db("admin").command({ ping: 1 });
-		console.log("Pinged your deployment. You successfully connected to MongoDB!");
+		console.log("Pinged your deployment. You are successfully connected to MongoDB!");
 	} finally {
 	}
 }
