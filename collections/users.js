@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { ObjectId, client } = require("../db");
+const jwt = require("jsonwebtoken");
 const usersCollection = client.db("animeFig").collection("users");
 
 const verifyJWT = (req, res, next) => {
@@ -29,7 +30,21 @@ const verifyAdmin = async (req, res, next) => {
 	next();
 };
 
-// >> users api
+// Create user
+router.post("/", async (req, res) => {
+	const user = req.body;
+	const query = { email: user.email };
+	const existingUser = await usersCollection.findOne(query);
+
+	if (existingUser) {
+		return res.send({ message: "user already exists" });
+	}
+
+	const result = await usersCollection.insertOne(user);
+	res.send(result);
+});
+
+// >> get users
 router.get("/", async (req, res) => {
 	let query = {};
 
@@ -87,19 +102,6 @@ router.patch("/:email", verifyJWT, verifyAdmin, async (req, res) => {
 			error: "Internal server error",
 		});
 	}
-});
-
-router.post("/", async (req, res) => {
-	const user = req.body;
-	const query = { email: user.email };
-	const existingUser = await usersCollection.findOne(query);
-
-	if (existingUser) {
-		return res.send({ message: "user already exists" });
-	}
-
-	const result = await usersCollection.insertOne(user);
-	res.send(result);
 });
 
 router.delete("/:id", verifyJWT, async (req, res) => {

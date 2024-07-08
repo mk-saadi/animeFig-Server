@@ -13,18 +13,18 @@ router.get("/", async (req, res) => {
 	if (req.query.search) {
 		query.name = { $regex: req.query.search, $options: "i" };
 	}
-	if (req.params.category) {
-		if (
-			req.params.category == "Scale Figures" ||
-			req.params.category == "Bishoujo Figures" ||
-			req.params.category == "Figma" ||
-			req.params.category == "Nendoroid"
-		) {
-			query.category = req.params.category;
-		} else {
-			query.category = { $regex: req.params.category, $options: "i" };
-		}
-	}
+	// if (req.params.category) {
+	// 	if (
+	// 		req.params.category == "Scale Figures" ||
+	// 		req.params.category == "Bishoujo Figures" ||
+	// 		req.params.category == "Figma" ||
+	// 		req.params.category == "Nendoroid"
+	// 	) {
+	// 		query.category = req.params.category;
+	// 	} else {
+	// 		query.category = { $regex: req.params.category, $options: "i" };
+	// 	}
+	// }
 	const result = await addedFigureCollection.find(query).sort({ price: -1 }).toArray();
 	res.send(result);
 });
