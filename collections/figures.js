@@ -42,15 +42,7 @@ router.get("/", async (req, res) => {
 	res.send(result);
 });
 
-// make a pagination api
-
-// router.get("/:id", async (req, res) => {
-// 	const id = req.params.id;
-// 	const query = { _id: new ObjectId(id) };
-// 	const result = await figureCollection.findOne(query);
-// 	res.send(result);
-// });
-
+// pagination api
 router.get("/totalFigure", async (req, res) => {
 	const result = await figureCollection.countDocuments();
 	res.send({ totalFigure: result });
@@ -111,13 +103,6 @@ router.get("/form_value", async (req, res) => {
 		res.status(500).send("Internal server error");
 	}
 });
-
-// router.get("/:id", async (req, res) => {
-// 	const id = req.params.id;
-// 	const query = { _id: new ObjectId(id) };
-// 	const result = await figureCollection.findOne(query);
-// 	res.send(result);
-// });
 
 // get figures by id
 router.get("/:id", async (req, res) => {
