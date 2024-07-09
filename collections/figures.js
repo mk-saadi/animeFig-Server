@@ -95,21 +95,7 @@ router.get("/form_value", async (req, res) => {
 	}
 });
 
-// get figures by id
-// router.get("/:id", async (req, res) => {
-// 	const id = req.params.id;
-
-// 	if (!ObjectId.isValid(id)) {
-// 		return res.status(400).send("Invalid ObjectId format");
-// 	}
-
-// 	const query = { _id: new ObjectId(id) };
-// 	const result = await figureCollection.findOne(query);
-// 	console.log("result: ", result);
-// 	res.send(result);
-// });
-
-// get figure by name
+// get figure by link
 router.get("/:link", async (req, res) => {
 	const link = req.params.link;
 	const query = { link: link };
@@ -118,17 +104,17 @@ router.get("/:link", async (req, res) => {
 	res.send(result);
 });
 
-router.get("/api/names", async (req, res) => {
-	try {
-		const cursor = figureCollection.find({}, { projection: { name: 1, _id: 0 } });
-		const names = await cursor.toArray();
-		console.log("names: ", names);
-		res.send(names);
-	} catch (error) {
-		console.error("Error fetching names:", error);
-		res.status(500).send("Error fetching names");
-	}
-});
+// router.get("/api/names", async (req, res) => {
+// 	try {
+// 		const cursor = figureCollection.find({}, { projection: { name: 1, _id: 0 } });
+// 		const names = await cursor.toArray();
+// 		console.log("names: ", names);
+// 		res.send(names);
+// 	} catch (error) {
+// 		console.error("Error fetching names:", error);
+// 		res.status(500).send("Error fetching names");
+// 	}
+// });
 
 module.exports = router;
 
