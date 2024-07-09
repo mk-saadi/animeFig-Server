@@ -9,19 +9,6 @@ router.post("/", async (req, res) => {
 	res.send(result);
 });
 
-// router.get("/", async (req, res) => {
-// 	const cursor = figureCollection.find(
-// 		{},
-// 		{ projection: { _id: 1, series: 1, images: 1, name: 1, price: 1, offer: 1, label: 1 } }
-// 	);
-// 	const result = await cursor.toArray();
-// 	res.send(result);
-// });
-
-// Alternative approach (using aggregation pipeline):
-// const result = await figureCollection.aggregate([
-//   { $project: { _id: 1, series: 1, images: { $slice: 1 }, name: 1, price: 1, offer: 1, label: 1 } }
-// ]).toArray();
 router.get("/", async (req, res) => {
 	const cursor = figureCollection.find(
 		{},
@@ -33,6 +20,7 @@ router.get("/", async (req, res) => {
 				price: 1,
 				series: 1,
 				offer: 1,
+				link: 1,
 				label: 1,
 			},
 		}
@@ -58,7 +46,6 @@ router.get("/search", async (req, res) => {
 	if (character) query.character = character;
 	if (brand) query.brand = brand;
 
-	// Ensure at least one query parameter is provided
 	if (Object.keys(query).length === 0) {
 		return res
 			.status(400)
@@ -80,6 +67,7 @@ router.get("/search", async (req, res) => {
 					series: 1,
 					offer: 1,
 					label: 1,
+					link: 1,
 				},
 			})
 			.skip(skip)
@@ -95,7 +83,10 @@ router.get("/search", async (req, res) => {
 
 router.get("/form_value", async (req, res) => {
 	try {
-		const cursor = figureCollection.find({}, { projection: { _id: 1, series: 1, category: 1 } });
+		const cursor = figureCollection.find(
+			{},
+			{ projection: { _id: 1, series: 1, category: 1, brand: 1, character: 1, link: 1 } }
+		);
 		const result = await cursor.toArray();
 		res.send(result);
 	} catch (error) {
@@ -105,18 +96,53 @@ router.get("/form_value", async (req, res) => {
 });
 
 // get figures by id
-router.get("/:id", async (req, res) => {
-	const id = req.params.id;
+// router.get("/:id", async (req, res) => {
+// 	const id = req.params.id;
 
-	// Validate the id format
-	if (!ObjectId.isValid(id)) {
-		return res.status(400).send("Invalid ObjectId format");
-	}
+// 	if (!ObjectId.isValid(id)) {
+// 		return res.status(400).send("Invalid ObjectId format");
+// 	}
 
-	const query = { _id: new ObjectId(id) };
+// 	const query = { _id: new ObjectId(id) };
+// 	const result = await figureCollection.findOne(query);
+// 	console.log("result: ", result);
+// 	res.send(result);
+// });
+
+// get figure by name
+router.get("/:link", async (req, res) => {
+	const link = req.params.link;
+	const query = { link: link };
 	const result = await figureCollection.findOne(query);
 	console.log("result: ", result);
 	res.send(result);
 });
 
+router.get("/api/names", async (req, res) => {
+	try {
+		const cursor = figureCollection.find({}, { projection: { name: 1, _id: 0 } });
+		const names = await cursor.toArray();
+		console.log("names: ", names);
+		res.send(names);
+	} catch (error) {
+		console.error("Error fetching names:", error);
+		res.status(500).send("Error fetching names");
+	}
+});
+
 module.exports = router;
+
+// router.get("/", async (req, res) => {
+// 	const cursor = figureCollection.find(
+// 		{},
+// 		{ projection: { _id: 1, series: 1, images: 1, name: 1, price: 1, offer: 1, label: 1 } }
+// 	);
+
+// 	// Alternative approach (using aggregation pipeline):
+// 	// const result = await figureCollection.aggregate([
+// 	//   { $project: { _id: 1, series: 1, images: { $slice: 1 }, name: 1, price: 1, offer: 1, label: 1 } }
+// 	// ]).toArray();
+
+// 	const result = await cursor.toArray();
+// 	res.send(result);
+// });
