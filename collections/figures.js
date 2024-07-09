@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { ObjectId, client } = require("../db");
+const { ObjectId, client } = require("../db.js");
 const figureCollection = client.db("animeFig").collection("figures");
 
 router.post("/", async (req, res) => {
@@ -43,53 +43,23 @@ router.get("/", async (req, res) => {
 });
 
 // make a pagination api
-router.get("/pagination", async (req, res) => {
-	const page = parseInt(req.query.page) || 1;
-	const limit = parseInt(req.query.limit) || 6;
-	const skip = (page - 1) * limit;
 
-	try {
-		const result = await figureCollection
-			.find(
-				{},
-				{
-					projection: {
-						_id: 1,
-						name: 1,
-						images: { $slice: 2 },
-						price: 1,
-						series: 1,
-						offer: 1,
-						label: 1,
-					},
-				}
-			)
-			.skip(skip)
-			.limit(limit)
-			.toArray();
-
-		res.send(result);
-	} catch (error) {
-		res.status(500).send("Error fetching paginated data");
-	}
-});
+// router.get("/:id", async (req, res) => {
+// 	const id = req.params.id;
+// 	const query = { _id: new ObjectId(id) };
+// 	const result = await figureCollection.findOne(query);
+// 	res.send(result);
+// });
 
 router.get("/totalFigure", async (req, res) => {
 	const result = await figureCollection.countDocuments();
 	res.send({ totalFigure: result });
 });
 
-router.get("/:id", async (req, res) => {
-	const id = req.params.id;
-	const query = { _id: ObjectId(id) };
-	const result = await figureCollection.findOne(query);
-	res.send(result);
-});
-
 router.get("/search", async (req, res) => {
 	const { category, series, character, brand } = req.query;
+	const { page, limit } = req.query;
 	const query = {};
-	console.log("query: ", query);
 
 	if (category) query.category = category;
 	if (series) query.series = series;
@@ -103,20 +73,32 @@ router.get("/search", async (req, res) => {
 			.send({ error: "At least one query parameter (category, series, character, brand) is required" });
 	}
 
-	const cursor = figureCollection.find(query, {
-		projection: {
-			_id: 1,
-			name: 1,
-			images: { $slice: 2 },
-			price: 1,
-			series: 1,
-			offer: 1,
-			label: 1,
-		},
-	});
-	const result = await cursor.toArray();
-	console.log("result: ", result);
-	res.send(result);
+	const pageInt = parseInt(page) || 1;
+	const limitInt = parseInt(limit) || 6;
+	const skip = (pageInt - 1) * limitInt;
+
+	try {
+		const cursor = figureCollection
+			.find(query, {
+				projection: {
+					_id: 1,
+					name: 1,
+					images: { $slice: 2 },
+					price: 1,
+					series: 1,
+					offer: 1,
+					label: 1,
+				},
+			})
+			.skip(skip)
+			.limit(limitInt);
+
+		const result = await cursor.toArray();
+		res.send(result);
+	} catch (error) {
+		console.error("Error fetching search results:", error);
+		res.status(500).send("Error fetching search results");
+	}
 });
 
 router.get("/form_value", async (req, res) => {
@@ -131,16 +113,25 @@ router.get("/form_value", async (req, res) => {
 });
 
 // router.get("/:id", async (req, res) => {
-// 	try {
-// 		const id = req.params.id;
-// 		const objectId = new ObjectId(id); // Explicit conversion
-// 		const query = { _id: objectId };
-// 		const result = await figureCollection.findOne(query);
-// 		res.send(result);
-// 	} catch (error) {
-// 		console.error("Error fetching data:", error);
-// 		res.status(500).send("Internal server error");
-// 	}
+// 	const id = req.params.id;
+// 	const query = { _id: new ObjectId(id) };
+// 	const result = await figureCollection.findOne(query);
+// 	res.send(result);
 // });
+
+// get figures by id
+router.get("/:id", async (req, res) => {
+	const id = req.params.id;
+
+	// Validate the id format
+	if (!ObjectId.isValid(id)) {
+		return res.status(400).send("Invalid ObjectId format");
+	}
+
+	const query = { _id: new ObjectId(id) };
+	const result = await figureCollection.findOne(query);
+	console.log("result: ", result);
+	res.send(result);
+});
 
 module.exports = router;

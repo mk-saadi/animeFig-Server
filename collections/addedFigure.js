@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { ObjectId, client } = require("../db");
+const { ObjectId, client } = require("../db.js");
 const addedFigureCollection = client.db("animeFig").collection("addedFigure");
 
 // # main get function
@@ -78,7 +78,6 @@ router.get("/pagination", async (req, res) => {
 		.skip(skip)
 		.limit(limit)
 		.toArray();
-	console.log("result: ", result);
 
 	res.send(result);
 });

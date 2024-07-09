@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { client } = require("../db");
+// const { client } = require("../db");
+const { ObjectId, client } = require("../db.js");
 const categoryCollection = client.db("animeFig").collection("categories");
 
 // >> categories api

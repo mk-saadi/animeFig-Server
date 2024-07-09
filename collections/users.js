@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { ObjectId, client } = require("../db");
+const { ObjectId, client } = require("../db.js");
 const jwt = require("jsonwebtoken");
 const usersCollection = client.db("animeFig").collection("users");
 
