@@ -48,6 +48,14 @@ router.get("/category", async (req, res) => {
 	res.send(result);
 });
 
+// # get figures by series
+// router.get("/series/:series", async (req, res) => {
+// 	const series = req.params.series;
+// 	const cursor = addedFigureCollection.find({ series: series });
+// 	const result = await cursor.toArray();
+// 	res.send(result);
+// });
+
 // # pagination api below
 router.get("/pagination", async (req, res) => {
 	const page = parseInt(req.query.page) || 0;
@@ -70,6 +78,8 @@ router.get("/pagination", async (req, res) => {
 		.skip(skip)
 		.limit(limit)
 		.toArray();
+	console.log("result: ", result);
+
 	res.send(result);
 });
 router.get("/totalAddedFigure", async (req, res) => {
@@ -98,14 +108,6 @@ router.get("/:id", async (req, res) => {
 	const result = await addedFigureCollection.findOne(query);
 	res.send(result);
 });
-
-// # get figures by series
-// router.get("/series/:series", async (req, res) => {
-// 	const series = req.params.series;
-// 	const cursor = addedFigureCollection.find({ series: series });
-// 	const result = await cursor.toArray();
-// 	res.send(result);
-// });
 
 // # add figure to collection
 router.post("", async (req, res) => {
