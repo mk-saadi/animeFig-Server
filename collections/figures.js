@@ -9,6 +9,102 @@ router.post("/", async (req, res) => {
 	res.send(result);
 });
 
+// get similar figures
+router.get("/similar_series", async (req, res) => {
+	try {
+		const { link } = req.query;
+		console.log("link: ", link);
+
+		if (!link) {
+			return res.status(400).send({ error: "Figure link is required" });
+		}
+
+		// Find the current figure based on the link
+		const currentFigure = await figureCollection.findOne({ link });
+
+		if (!currentFigure) {
+			return res.status(404).send({ error: "Figure not found" });
+		}
+
+		// Find similar figures based on the series, excluding the current figure
+		const similarFigures = await figureCollection
+			.find(
+				{
+					series: currentFigure.series,
+					link: { $ne: currentFigure.link }, // Exclude the current figure
+				},
+				{
+					projection: {
+						_id: 1,
+						name: 1,
+						images: { $slice: 1 },
+						price: 1,
+						series: 1,
+						offer: 1,
+						link: 1,
+						label: 1,
+						release: 1,
+					},
+				}
+			)
+			.sort({ _id: -1 })
+			.toArray();
+
+		res.send(similarFigures);
+	} catch (error) {
+		console.error("Error fetching similar figures:", error);
+		res.status(500).send({ error: "Internal server error" });
+	}
+});
+
+// get similar characters
+router.get("/similar_characters", async (req, res) => {
+	try {
+		const { link } = req.query;
+		console.log("link: ", link);
+
+		if (!link) {
+			return res.status(400).send({ error: "Character link is required" });
+		}
+
+		// Find the current character based on the link
+		const currentCharacter = await figureCollection.findOne({ link });
+
+		if (!currentCharacter) {
+			return res.status(404).send({ error: "Character not found" });
+		}
+
+		// Find similar characters based on the series, excluding the current character
+		const similarCharacters = await figureCollection
+			.find(
+				{
+					character: currentCharacter.character,
+					link: { $ne: currentCharacter.link }, // Exclude the current character
+				},
+				{
+					projection: {
+						_id: 1,
+						name: 1,
+						images: { $slice: 1 },
+						price: 1,
+						series: 1,
+						offer: 1,
+						link: 1,
+						label: 1,
+						release: 1,
+					},
+				}
+			)
+			.sort({ _id: -1 })
+			.toArray();
+
+		res.send(similarCharacters);
+	} catch (error) {
+		console.error("Error fetching similar characters:", error);
+		res.status(500).send({ error: "Internal server error" });
+	}
+});
+
 router.get("/card", async (req, res) => {
 	const cursor = figureCollection
 		.find(
@@ -293,6 +389,7 @@ router.get("/all-filters", async (req, res) => {
 					},
 				}
 			)
+			.sort({ _id: -1 })
 			.toArray();
 
 		res.send({ figures });
@@ -376,6 +473,8 @@ router.get("/:link", async (req, res) => {
 	const result = await figureCollection.findOne(query);
 	res.send(result);
 });
+
+module.exports = router;
 
 // router.get("/api/names", async (req, res) => {
 // 	try {
