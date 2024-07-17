@@ -9,11 +9,16 @@ router.post("/", async (req, res) => {
 	res.send(result);
 });
 
+router.get("/", async (req, res) => {
+	const cursor = figureCollection.find();
+	const result = await cursor.toArray();
+	res.send(result);
+});
+
 // get similar figures
 router.get("/similar_series", async (req, res) => {
 	try {
 		const { link } = req.query;
-		console.log("link: ", link);
 
 		if (!link) {
 			return res.status(400).send({ error: "Figure link is required" });
@@ -31,7 +36,7 @@ router.get("/similar_series", async (req, res) => {
 			.find(
 				{
 					series: currentFigure.series,
-					link: { $ne: currentFigure.link }, // Exclude the current figure
+					link: { $ne: currentFigure.link },
 				},
 				{
 					projection: {
@@ -61,7 +66,6 @@ router.get("/similar_series", async (req, res) => {
 router.get("/similar_characters", async (req, res) => {
 	try {
 		const { link } = req.query;
-		console.log("link: ", link);
 
 		if (!link) {
 			return res.status(400).send({ error: "Character link is required" });
@@ -161,160 +165,54 @@ router.get("/search_box", async (req, res) => {
 	}
 });
 
+router.post("/:productId/comments", async (req, res) => {
+	const figId = req.params.productId;
+	const comment = req.body;
+
+	const figs = await figureCollection.findOne({ _id: new ObjectId(figId) });
+	if (!figs) {
+		return res.status(404).send({ message: "Product not found" });
+	}
+
+	comment._id = new ObjectId(); // Generate a new ObjectId for the comment
+	comment.createdAt = new Date();
+
+	const result = await figureCollection.updateOne(
+		{ _id: new ObjectId(figId) },
+		{ $push: { comments: comment } },
+		{ upsert: true }
+	);
+
+	res.send(result);
+});
+
+// make a delete api for comments
+router.delete("/:productId/comments/:commentId", async (req, res) => {
+	const figId = req.params.productId;
+	const commentId = req.params.commentId;
+
+	try {
+		const figs = await figureCollection.findOne({ _id: new ObjectId(figId) });
+		if (!figs) {
+			return res.status(404).send({ message: "Product not found" });
+		}
+
+		const result = await figureCollection.updateOne(
+			{ _id: new ObjectId(figId) },
+			{ $pull: { comments: { _id: new ObjectId(commentId) } } }
+		);
+
+		if (result.modifiedCount === 0) {
+			return res.status(404).send({ message: "Comment not found" });
+		}
+
+		res.send({ message: "Comment deleted successfully" });
+	} catch (error) {
+		res.status(500).send({ message: "An error occurred", error: error.message });
+	}
+});
+
 router.get("/collections", async (req, res) => {
-	const { page, limit } = req.query;
-
-	const pageInt = parseInt(page) || 1;
-	const limitInt = parseInt(limit) || 100;
-	const skip = (pageInt - 1) * limitInt;
-
-	try {
-		const cursor = figureCollection
-			.find(
-				{},
-				{
-					projection: {
-						_id: 1,
-						name: 1,
-						images: { $slice: 2 },
-						price: 1,
-						series: 1,
-						offer: 1,
-						link: 1,
-						label: 1,
-					},
-				}
-			)
-			.sort({ _id: -1 })
-			.skip(skip)
-			.limit(limitInt);
-
-		const result = await cursor.toArray();
-		const totalFigures = await figureCollection.countDocuments();
-
-		res.send({
-			figures: result,
-			totalFigures,
-			totalPages: Math.ceil(totalFigures / limitInt),
-			currentPage: pageInt,
-		});
-	} catch (error) {
-		console.error("Error fetching figures:", error);
-		res.status(500).send("Error fetching figures");
-	}
-});
-
-// pagination api
-// router.get("/search", async (req, res) => {
-// 	const { category, series, character, brand } = req.query;
-// 	const { page, limit } = req.query;
-// 	const query = {};
-
-// 	if (category) query.category = category;
-// 	if (series) query.series = series;
-// 	if (character) query.character = character;
-// 	if (brand) query.brand = brand;
-
-// 	if (Object.keys(query).length === 0) {
-// 		return res
-// 			.status(400)
-// 			.send({ error: "At least one query parameter (category, series, character, brand) is required" });
-// 	}
-
-// 	const pageInt = parseInt(page) || 1;
-// 	const limitInt = parseInt(limit) || 6;
-// 	const skip = (pageInt - 1) * limitInt;
-
-// 	try {
-// 		const cursor = figureCollection
-// 			.find(query, {
-// 				projection: {
-// 					_id: 1,
-// 					name: 1,
-// 					images: { $slice: 2 },
-// 					price: 1,
-// 					series: 1,
-// 					offer: 1,
-// 					label: 1,
-// 					link: 1,
-// 				},
-// 			})
-// 			.skip(skip)
-// 			.limit(limitInt);
-
-// 		const result = await cursor.toArray();
-// 		res.send(result);
-// 	} catch (error) {
-// 		console.error("Error fetching search results:", error);
-// 		res.status(500).send("Error fetching search results");
-// 	}
-// });
-
-// working pagination api: http://localhost:3000/figures/search?series=Fate%20Series&category=Scale%20Figures&page=1&limit=2
-router.get("/search_api", async (req, res) => {
-	const { category, series, character, brand, page, limit } = req.query;
-	const query = {};
-
-	if (category) query.category = category;
-	if (series) query.series = series;
-	if (character) query.character = character;
-	if (brand) query.brand = brand;
-
-	if (Object.keys(query).length === 0) {
-		return res
-			.status(400)
-			.send({ error: "At least one query parameter (category, series, character, brand) is required" });
-	}
-
-	const pageInt = parseInt(page) || 1;
-	const limitInt = parseInt(limit) || 12;
-	const skip = (pageInt - 1) * limitInt;
-
-	try {
-		const cursor = figureCollection
-			.find(query, {
-				projection: {
-					_id: 1,
-					name: 1,
-					images: { $slice: 2 },
-					price: 1,
-					series: 1,
-					offer: 1,
-					label: 1,
-					link: 1,
-					release: 1,
-				},
-			})
-			.sort({ _id: -1 })
-			.skip(skip)
-			.limit(limitInt);
-
-		const result = await cursor.toArray();
-		const totalMatchingFigures = await figureCollection.countDocuments(query);
-
-		res.send({
-			figures: result,
-			totalMatchingFigures,
-		});
-	} catch (error) {
-		console.error("Error fetching search results:", error);
-		res.status(500).send("Error fetching search results");
-	}
-});
-
-// router.get("/all_filters", async (req, res) => {
-// 	try {
-// 		const categories = await figureCollection.distinct("category");
-// 		const series = await figureCollection.distinct("series");
-// 		const characters = await figureCollection.distinct("character");
-// 		res.send({ categories, series, characters });
-// 	} catch (error) {
-// 		console.error("Error fetching filters:", error);
-// 		res.status(500).send("Error fetching filters");
-// 	}
-// });
-
-router.get("/all", async (req, res) => {
 	const { page, limit, name, category, series, character, sort, order, label } = req.query;
 
 	const pageInt = parseInt(page) || 1;
@@ -328,8 +226,6 @@ router.get("/all", async (req, res) => {
 	if (character) query.character = character;
 	if (label) query.label = label;
 
-	// const sortOptions = {};
-	// if (sort) sortOptions[sort] = order === "asc" ? 1 : -1;
 	const sortOptions = {};
 	if (sort) {
 		sortOptions[sort] = order === "asc" ? 1 : -1;
@@ -399,59 +295,6 @@ router.get("/all-filters", async (req, res) => {
 	}
 });
 
-router.get("/search", async (req, res) => {
-	const { params, page, limit } = req.query;
-	const query = {};
-
-	if (params) {
-		query.$or = [{ category: params }, { series: params }, { character: params }, { brand: params }];
-	}
-
-	if (Object.keys(query).length === 0) {
-		return res.status(400).send({ error: "At least one query parameter (params) is required" });
-	}
-
-	const pageInt = parseInt(page) || 1;
-	const limitInt = parseInt(limit) || 12;
-	const skip = (pageInt - 1) * limitInt;
-
-	try {
-		const cursor = figureCollection
-			.find(query, {
-				projection: {
-					_id: 1,
-					name: 1,
-					images: { $slice: 2 },
-					price: 1,
-					series: 1,
-					offer: 1,
-					label: 1,
-					link: 1,
-					release: 1,
-				},
-			})
-			.sort({ _id: -1 })
-			.skip(skip)
-			.limit(limitInt);
-
-		const result = await cursor.toArray();
-		const totalMatchingFigures = await figureCollection.countDocuments(query);
-
-		res.send({
-			figures: result,
-			totalMatchingFigures,
-		});
-	} catch (error) {
-		console.error("Error fetching search results:", error);
-		res.status(500).send("Error fetching search results");
-	}
-});
-
-router.get("/totalFigure", async (req, res) => {
-	const result = await figureCollection.countDocuments();
-	res.send({ totalFigure: result });
-});
-
 router.get("/form_value", async (req, res) => {
 	try {
 		const cursor = figureCollection.find(
@@ -474,62 +317,6 @@ router.get("/:link", async (req, res) => {
 	res.send(result);
 });
 
-module.exports = router;
-
-// router.get("/api/names", async (req, res) => {
-// 	try {
-// 		const cursor = figureCollection.find({}, { projection: { name: 1, _id: 0 } });
-// 		const names = await cursor.toArray();
-// 		console.log("names: ", names);
-// 		res.send(names);
-// 	} catch (error) {
-// 		console.error("Error fetching names:", error);
-// 		res.status(500).send("Error fetching names");
-// 	}
-// });
-
-// const updateFigureLabels = async () => {
-// 	try {
-// 		const figures = await figureCollection.find().toArray();
-
-// 		const updates = figures
-// 			.map((figure) => {
-// 				let newLabel = figure.label;
-// 				const today = new Date();
-// 				const releaseDate = new Date(figure.release);
-
-// 				if (figure.quantity === 0) {
-// 					newLabel = "Out Of Stock";
-// 				} else if (figure.label === "Coming Soon" && releaseDate <= today) {
-// 					newLabel = "Brand New";
-// 				} else if (figure.label === "Brand New" && figure.quantity < 10) {
-// 					newLabel = "Limited";
-// 				}
-
-// 				if (newLabel !== figure.label) {
-// 					return {
-// 						updateOne: {
-// 							filter: { _id: figure._id },
-// 							update: { $set: { label: newLabel } },
-// 						},
-// 					};
-// 				}
-// 				return null;
-// 			})
-// 			.filter((update) => update !== null);
-
-// 		if (updates.length > 0) {
-// 			await figureCollection.bulkWrite(updates);
-// 			console.log("Labels updated successfully");
-// 		} else {
-// 			console.log("No labels to update");
-// 		}
-// 	} catch (error) {
-// 		console.error("Error updating labels:", error);
-// 	} finally {
-// 		await client.close();
-// 	}
-// };
 const updateLabels = async () => {
 	try {
 		const figures = await figureCollection.find().toArray();
@@ -553,28 +340,7 @@ const updateLabels = async () => {
 		console.error("Error updating labels:", error);
 	}
 };
-
 // Run the updateLabels function every hour (3600000 milliseconds)
 setInterval(updateLabels, 3600000);
 
-// Set up the interval to run the update function every 1 hour (3600000 milliseconds)
-// setInterval(() => {
-// 	updateFigureLabels().catch(console.error);
-// }, 3600000);
-
 module.exports = router;
-
-// router.get("/", async (req, res) => {
-// 	const cursor = figureCollection.find(
-// 		{},
-// 		{ projection: { _id: 1, series: 1, images: 1, name: 1, price: 1, offer: 1, label: 1 } }
-// 	);
-
-// 	// Alternative approach (using aggregation pipeline):
-// 	// const result = await figureCollection.aggregate([
-// 	//   { $project: { _id: 1, series: 1, images: { $slice: 1 }, name: 1, price: 1, offer: 1, label: 1 } }
-// 	// ]).toArray();
-
-// 	const result = await cursor.toArray();
-// 	res.send(result);
-// });
