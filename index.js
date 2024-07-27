@@ -9,10 +9,10 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// import mongodb essentials from db
+/* -------------------- import mongodb essentials from db ------------------- */
 const { connectToDatabase, client } = require("./db");
 
-// Import routes
+/* ------------------------------ Import routes ----------------------------- */
 const addedFigureRoutes = require("./collections/addedFigure");
 const userRoutes = require("./collections/users");
 const figureRoutes = require("./collections/figures");
@@ -32,7 +32,7 @@ async function run() {
 			res.send({ token });
 		});
 
-		// Attach the collection to the request object
+		/* --------------- Attach the collection to the request object -------------- */
 		app.use((req, res, next) => {
 			req.figureCollection = figureCollection;
 			req.addedFigureCollection = addedFigureCollection;
@@ -41,7 +41,7 @@ async function run() {
 			next();
 		});
 
-		// Use routes
+		/* ------------------------------- Use routes ------------------------------- */
 		app.use("/figures", figureRoutes);
 		app.use("/addedFigure", addedFigureRoutes);
 		app.use("/users", userRoutes);

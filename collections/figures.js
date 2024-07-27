@@ -1,21 +1,27 @@
+/* -------------------------------------------------------------------------- */
+/*                                figures api's                               */
+/* -------------------------------------------------------------------------- */
+
 const express = require("express");
 const router = express.Router();
 const { ObjectId, client } = require("../db.js");
 const figureCollection = client.db("animeFig").collection("figures");
 
+/* ------------------------------ post figures ------------------------------ */
 router.post("/", async (req, res) => {
 	const figures = req.body;
 	const result = await figureCollection.insertOne(figures);
 	res.send(result);
 });
 
+/* ---------------------------- TODO: delete this --------------------------- */
 router.get("/", async (req, res) => {
 	const cursor = figureCollection.find();
 	const result = await cursor.toArray();
 	res.send(result);
 });
 
-// get similar figures
+/* --------------------------- get similar figures -------------------------- */
 router.get("/similar_series", async (req, res) => {
 	try {
 		const { link } = req.query;
@@ -62,7 +68,7 @@ router.get("/similar_series", async (req, res) => {
 	}
 });
 
-// get similar characters
+/* ------------------------- get similar characters ------------------------- */
 router.get("/similar_characters", async (req, res) => {
 	try {
 		const { link } = req.query;
@@ -109,6 +115,7 @@ router.get("/similar_characters", async (req, res) => {
 	}
 });
 
+/* ----------------------------- figure card api ---------------------------- */
 router.get("/card", async (req, res) => {
 	const cursor = figureCollection
 		.find(
@@ -117,7 +124,7 @@ router.get("/card", async (req, res) => {
 				projection: {
 					_id: 1,
 					name: 1,
-					images: { $slice: 2 },
+					images: { $slice: 1 },
 					price: 1,
 					series: 1,
 					offer: 1,
@@ -133,6 +140,7 @@ router.get("/card", async (req, res) => {
 	res.send(result);
 });
 
+/* ------------------ search figure by name/category/series ----------------- */
 router.get("/search_box", async (req, res) => {
 	const { name, category, series } = req.query;
 	const query = {};
@@ -165,6 +173,7 @@ router.get("/search_box", async (req, res) => {
 	}
 });
 
+/* ------------------------------ post comments ----------------------------- */
 router.post("/:productId/comments", async (req, res) => {
 	const figId = req.params.productId;
 	const comment = req.body;
@@ -174,7 +183,7 @@ router.post("/:productId/comments", async (req, res) => {
 		return res.status(404).send({ message: "Product not found" });
 	}
 
-	comment._id = new ObjectId(); // Generate a new ObjectId for the comment
+	comment._id = new ObjectId();
 	comment.createdAt = new Date();
 
 	const result = await figureCollection.updateOne(
@@ -186,7 +195,7 @@ router.post("/:productId/comments", async (req, res) => {
 	res.send(result);
 });
 
-// make a delete api for comments
+/* -------------------- delete api for individual comment ------------------- */
 router.delete("/:productId/comments/:commentId", async (req, res) => {
 	const figId = req.params.productId;
 	const commentId = req.params.commentId;
@@ -212,6 +221,7 @@ router.delete("/:productId/comments/:commentId", async (req, res) => {
 	}
 });
 
+/* ---------------------------- main get function --------------------------- */
 router.get("/collections", async (req, res) => {
 	const { page, limit, name, category, series, character, sort, order, label } = req.query;
 
@@ -269,6 +279,7 @@ router.get("/collections", async (req, res) => {
 	}
 });
 
+/* ------- get the figure count for each categories/series/characters ------- */
 router.get("/all-filters", async (req, res) => {
 	try {
 		const figures = await figureCollection
@@ -309,7 +320,43 @@ router.get("/form_value", async (req, res) => {
 	}
 });
 
-// get figure by link
+/* ------------------------------ update figure ----------------------------- */
+router.put("/:id", async (req, res) => {
+	const id = req.params.id;
+	const filter = { _id: new ObjectId(id) };
+	const options = { upsert: true };
+
+	const uf = req.body;
+	const figures = {
+		$set: {
+			name: uf.name,
+			images: uf.images,
+			price: uf.price,
+			quantity: uf.quantity,
+			description: uf.description,
+			brand: uf.brand,
+			category: uf.category,
+			series: uf.series,
+			character: uf.character,
+			label: uf.label,
+			offer: uf.offer,
+			dimension: uf.dimension,
+			release: uf.release,
+		},
+	};
+	const result = await figureCollection.updateOne(filter, figures, options);
+	res.send(result);
+});
+
+/* --------------------------- delete figure by id -------------------------- */
+router.delete("/:id", async (req, res) => {
+	const id = req.params.id;
+	const query = { _id: new ObjectId(id) };
+	const result = await figureCollection.deleteOne(query);
+	res.send(result);
+});
+
+/* ---------------------- get individual figure by link --------------------- */
 router.get("/:link", async (req, res) => {
 	const link = req.params.link;
 	const query = { link: link };
@@ -317,6 +364,7 @@ router.get("/:link", async (req, res) => {
 	res.send(result);
 });
 
+/* ----------------- function to update figure automatically ---------------- */
 const updateLabels = async () => {
 	try {
 		const figures = await figureCollection.find().toArray();
@@ -340,7 +388,7 @@ const updateLabels = async () => {
 		console.error("Error updating labels:", error);
 	}
 };
-// Run the updateLabels function every hour (3600000 milliseconds)
+/* ----- Run the updateLabels function every hour (3600000 milliseconds) ---- */
 setInterval(updateLabels, 3600000);
 
 module.exports = router;
