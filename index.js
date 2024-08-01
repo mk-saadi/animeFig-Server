@@ -13,15 +13,13 @@ app.use(express.json());
 const { connectToDatabase, client } = require("./db");
 
 /* ------------------------------ Import routes ----------------------------- */
-const addedFigureRoutes = require("./collections/addedFigure");
 const userRoutes = require("./collections/users");
 const figureRoutes = require("./collections/figures");
 const categoriesRoutes = require("./collections/categories");
 
 async function run() {
 	try {
-		const { figureCollection, addedFigureCollection, usersCollection, categoryCollection } =
-			await connectToDatabase();
+		const { figureCollection, usersCollection, categoryCollection } = await connectToDatabase();
 
 		app.post("/jwt", (req, res) => {
 			const user = req.body;
@@ -43,7 +41,6 @@ async function run() {
 
 		/* ------------------------------- Use routes ------------------------------- */
 		app.use("/figures", figureRoutes);
-		app.use("/addedFigure", addedFigureRoutes);
 		app.use("/users", userRoutes);
 		app.use("/categories", categoriesRoutes);
 

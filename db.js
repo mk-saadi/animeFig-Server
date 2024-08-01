@@ -21,7 +21,6 @@ const connectToDatabase = async () => {
 	}
 	return {
 		figureCollection: dbConnection.collection("figures"),
-		addedFigureCollection: dbConnection.collection("addedFigure"),
 		usersCollection: dbConnection.collection("users"),
 		categoryCollection: dbConnection.collection("categories"),
 	};
