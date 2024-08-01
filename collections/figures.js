@@ -195,6 +195,65 @@ router.post("/:productId/comments", async (req, res) => {
 	res.send(result);
 });
 
+/* ------------------------ like or dislike a comment ----------------------- */
+// router.patch("/:productId/comments/:commentId", async (req, res) => {
+// 	const figId = req.params.productId;
+// 	const commentId = req.params.commentId;
+// 	const { like } = req.body;
+
+// 	const figs = await figureCollection.findOne({ _id: new ObjectId(figId) });
+// 	if (!figs) {
+// 		return res.status(404).send({ message: "Product not found" });
+// 	}
+
+// 	const result = await figureCollection.updateOne(
+// 		{ _id: new ObjectId(figId), "comments._id": new ObjectId(commentId) },
+// 		{ $set: { "comments.$.like": like } }
+// 	);
+
+// 	res.send(result);
+// });
+router.post("/:productId/comments/:commentId/react", async (req, res) => {
+	const { productId, commentId } = req.params;
+	const { userId, action } = req.body;
+
+	if (!["like", "dislike"].includes(action)) {
+		return res.status(400).send({ message: "Invalid action" });
+	}
+
+	try {
+		const fig = await figureCollection.findOne({ _id: new ObjectId(productId) });
+		if (!fig) {
+			return res.status(404).send({ message: "Product not found" });
+		}
+
+		const update =
+			action === "like"
+				? {
+						$addToSet: { "comments.$.likes": userId },
+						$pull: { "comments.$.dislikes": userId },
+				  }
+				: {
+						$addToSet: { "comments.$.dislikes": userId },
+						$pull: { "comments.$.likes": userId },
+				  };
+
+		const result = await figureCollection.updateOne(
+			{ _id: new ObjectId(productId), "comments._id": new ObjectId(commentId) },
+			update
+		);
+
+		if (result.matchedCount === 0) {
+			return res.status(404).send({ message: "Comment not found" });
+		}
+
+		res.send({ message: `Comment ${action}d successfully` });
+	} catch (error) {
+		console.error("Error updating comment reaction:", error);
+		res.status(500).send({ message: "Internal server error" });
+	}
+});
+
 /* -------------------- delete api for individual comment ------------------- */
 router.delete("/:productId/comments/:commentId", async (req, res) => {
 	const figId = req.params.productId;
