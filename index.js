@@ -33,7 +33,6 @@ async function run() {
 		/* --------------- Attach the collection to the request object -------------- */
 		app.use((req, res, next) => {
 			req.figureCollection = figureCollection;
-			req.addedFigureCollection = addedFigureCollection;
 			req.usersCollection = usersCollection;
 			req.categoryCollection = categoryCollection;
 			next();
