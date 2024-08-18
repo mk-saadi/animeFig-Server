@@ -6,6 +6,7 @@ const express = require("express");
 const router = express.Router();
 const { ObjectId, client } = require("../db.js");
 const figureCollection = client.db("animeFig").collection("figures");
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 
 /* ------------------------------ post figures ------------------------------ */
 router.post("/", async (req, res) => {
