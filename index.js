@@ -15,11 +15,13 @@ const { connectToDatabase, client } = require("./db");
 /* ------------------------------ Import routes ----------------------------- */
 const userRoutes = require("./collections/users");
 const figureRoutes = require("./collections/figures");
+const paymentRoutes = require("./collections/payments");
 const categoriesRoutes = require("./collections/categories");
 
 async function run() {
 	try {
-		const { figureCollection, usersCollection, categoryCollection } = await connectToDatabase();
+		const { figureCollection, usersCollection, categoryCollection, paymentCollection } =
+			await connectToDatabase();
 
 		app.post("/jwt", (req, res) => {
 			const user = req.body;
@@ -35,6 +37,7 @@ async function run() {
 			req.figureCollection = figureCollection;
 			req.usersCollection = usersCollection;
 			req.categoryCollection = categoryCollection;
+			req.paymentCollection = paymentCollection;
 			next();
 		});
 
@@ -42,6 +45,7 @@ async function run() {
 		app.use("/figures", figureRoutes);
 		app.use("/users", userRoutes);
 		app.use("/categories", categoriesRoutes);
+		app.use("/payments", paymentRoutes);
 
 		await client.db("admin").command({ ping: 1 });
 		console.log("Pinged your deployment. You are successfully connected to MongoDB!");

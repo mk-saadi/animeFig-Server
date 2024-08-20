@@ -23,6 +23,7 @@ const connectToDatabase = async () => {
 		figureCollection: dbConnection.collection("figures"),
 		usersCollection: dbConnection.collection("users"),
 		categoryCollection: dbConnection.collection("categories"),
+		paymentCollection: dbConnection.collection("payments"),
 	};
 };
 

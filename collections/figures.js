@@ -6,6 +6,7 @@ const express = require("express");
 const router = express.Router();
 const { ObjectId, client } = require("../db.js");
 const figureCollection = client.db("animeFig").collection("figures");
+const paymentCollection = client.db("animeFig").collection("payments");
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 
 /* ------------------------------ post figures ------------------------------ */
