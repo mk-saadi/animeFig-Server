@@ -6,52 +6,53 @@ const express = require("express");
 const router = express.Router();
 const { ObjectId, client } = require("../db.js");
 const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
-
-const figureCollection = client.db("animeFig").collection("figures");
 const paymentCollection = client.db("animeFig").collection("payments");
 
-// Create a payment intent
 router.post("/create-payment-intent", async (req, res) => {
-	const { cartItems, grandTotal } = req.body;
-	console.log("grandTotal: ", grandTotal);
-
-	// Create a PaymentIntent with the order amount and currency
+	const { grandTotal } = req.body;
+	const amount = parseInt(grandTotal * 100);
 	const paymentIntent = await stripe.paymentIntents.create({
-		amount: Math.round(grandTotal * 100), // Stripe works with smallest currency unit (e.g., cents)
+		amount: amount,
 		currency: "usd",
-		automatic_payment_methods: {
-			enabled: true,
-		},
+		payment_method_types: ["card"],
 	});
-
-	console.log("paymentIntent: ", paymentIntent);
-
 	res.send({
 		clientSecret: paymentIntent.client_secret,
 	});
 });
 
-// Store payment and order details
-router.post("/complete-payment", async (req, res) => {
-	const { paymentIntentId, userId, cartItems, totalPrice, grandTotal } = req.body;
+router.post("/payments_history", async (req, res) => {
+	const { email, transactionId, grandTotal, date, quantity, orderStatus, cartItems } = req.body;
 
-	// Store payment details in the paymentCollection
+	// Transform the cartItems into the desired orderedFigs structure
+	const orderedFigs = cartItems.map((item) => ({
+		figId: item.figId,
+		figName: item.figName,
+		figImage: item.figImg,
+		figLink: item.figLink,
+		figPrice: item.figPrice,
+		quantity: item.quantity,
+		totalPrice: item.totalPrice,
+	}));
+
 	const paymentRecord = {
-		userId: new ObjectId(userId),
-		paymentIntentId,
-		cartItems,
-		totalPrice,
-		grandTotal,
-		createdAt: new Date(),
+		email,
+		transactionId,
+		grandTotal: parseFloat(grandTotal),
+		date,
+		quantity,
+		orderStatus,
+		orderedFigs,
 	};
-	console.log("paymentRecord", paymentRecord);
 
 	const result = await paymentCollection.insertOne(paymentRecord);
-	console.log("complete-payment result : ", result);
+	res.send(result);
+});
 
-	// Optionally, clear the user's cart or handle post-payment logic
-
-	res.send({ success: true, result });
+router.get("/", async (req, res) => {
+	const cursor = paymentCollection.find();
+	const result = await cursor.toArray();
+	res.send(result);
 });
 
 module.exports = router;
