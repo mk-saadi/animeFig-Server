@@ -21,6 +21,37 @@ router.get("/", async (req, res) => {
 	res.send(result);
 });
 
+router.get("/features", async (req, res) => {
+	try {
+		const result = await figureCollection
+			.aggregate([
+				{
+					$project: {
+						image: { $arrayElemAt: ["$images", 0] },
+						name: 1,
+						link: 1,
+						series: 1,
+						_id: 1,
+					},
+				},
+				{ $sort: { _id: 1 } },
+				{
+					$group: {
+						_id: "$series",
+						doc: { $first: "$$ROOT" },
+					},
+				},
+				{ $replaceRoot: { newRoot: "$doc" } },
+				{ $limit: 4 },
+			])
+			.toArray();
+
+		res.send(result);
+	} catch (error) {
+		res.status(500).send({ message: "Failed to fetch featured figures", error });
+	}
+});
+
 /* --------------------------- get similar figures -------------------------- */
 router.get("/similar_series", async (req, res) => {
 	try {
