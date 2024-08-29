@@ -20,11 +20,20 @@ const verifyJWT = (req, res, next) => {
 	});
 };
 
-const verifyAdmin = async (req, res, next) => {
+const verifyGeneralAdmin = async (req, res, next) => {
 	const email = req.decoded.email;
 	const query = { email: email };
 	const user = await usersCollection.findOne(query);
-	if (user?.role !== "admin") {
+	if (user?.role !== "general_admin") {
+		return res.status(403).send({ error: true, message: "forbidden access!" });
+	}
+	next();
+};
+const verifySuperiorAdmin = async (req, res, next) => {
+	const email = req.decoded.email;
+	const query = { email: email };
+	const user = await usersCollection.findOne(query);
+	if (user?.role !== "superior_admin") {
 		return res.status(403).send({ error: true, message: "forbidden access!" });
 	}
 	next();
@@ -87,7 +96,7 @@ router.get("/:id", async (req, res) => {
 	res.send(result);
 });
 
-router.patch("/:email", verifyJWT, verifyAdmin, async (req, res) => {
+router.patch("/:email", verifyJWT, verifyGeneralAdmin, async (req, res) => {
 	const { email } = req.params;
 	const { role } = req.body;
 
