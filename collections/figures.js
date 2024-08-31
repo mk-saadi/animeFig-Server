@@ -55,7 +55,7 @@ router.get("/features", async (req, res) => {
 router.get("/latest_figures", async (req, res) => {
 	try {
 		// Fetch the latest 10 items from the figureCollection
-		const latestFigures = await figureCollection
+		const detailedFigures = await figureCollection
 			.find(
 				{},
 				{
@@ -73,10 +73,27 @@ router.get("/latest_figures", async (req, res) => {
 				}
 			)
 			.sort({ _id: -1 })
-			.limit(9)
+			.limit(15)
 			.toArray();
 
-		res.send(latestFigures);
+		const additionalFigures = await figureCollection
+			.find()
+			.sort({ _id: -1 })
+			.skip(15) // Skip the first 9 items to get the next 4
+			.limit(4)
+			.project({
+				_id: 1,
+				images: { $slice: 1 }, // Only include the first image in the response
+			})
+			.toArray();
+
+		// Combine the two sets of results
+		const combinedResult = {
+			detailedFigures,
+			additionalFigures,
+		};
+
+		res.send(combinedResult);
 	} catch (error) {
 		console.error("Failed to fetch latest figures:", error);
 		res.status(500).send({ error: "Failed to fetch latest figures" });
@@ -146,19 +163,65 @@ router.get("/coming_soon", async (req, res) => {
 
 router.get("/pre_owned", async (req, res) => {
 	try {
-		// Fetch items with the label "Pre Owned"
-		const ownedFigures = await figureCollection
-			.find({ label: "Pre Owned" }) // Query to find items with the "Pre Owned" label
+		// Fetch 9 items with full details
+		const detailedFigures = await figureCollection
+			.find({ label: "Pre Owned" })
 			.sort({ _id: -1 })
 			.limit(9)
-			.toArray(); // Convert the cursor to an array
+			.project({
+				_id: 1,
+				name: 1,
+				images: { $slice: 1 },
+				price: 1,
+				series: 1,
+				offer: 1,
+				link: 1,
+				label: 1,
+				release: 1,
+			})
+			.toArray();
 
-		res.send(ownedFigures);
+		// Fetch 4 additional items with only the first image
+		const additionalFigures = await figureCollection
+			.find({ label: "Pre Owned" })
+			.sort({ _id: -1 })
+			.skip(9) // Skip the first 9 items to get the next 4
+			.limit(4)
+			.project({
+				_id: 1,
+				images: { $slice: 1 }, // Only include the first image in the response
+			})
+			.toArray();
+
+		// Combine the two sets of results
+		const combinedResult = {
+			detailedFigures,
+			additionalFigures,
+		};
+
+		// Send the combined result
+		res.send(combinedResult);
 	} catch (error) {
-		console.error("Failed to fetch 'Pre Owned' figures:", error);
-		res.status(500).send({ error: "Failed to fetch 'Pre Owned' figures" });
+		console.error("Failed to fetch 'Coming Soon' figures:", error);
+		res.status(500).send({ error: "Failed to fetch 'Coming Soon' figures" });
 	}
 });
+
+// router.get("/pre_owned", async (req, res) => {
+// 	try {
+// 		// Fetch items with the label "Pre Owned"
+// 		const ownedFigures = await figureCollection
+// 			.find({ label: "Pre Owned" }) // Query to find items with the "Pre Owned" label
+// 			.sort({ _id: -1 })
+// 			.limit(9)
+// 			.toArray(); // Convert the cursor to an array
+
+// 		res.send(ownedFigures);
+// 	} catch (error) {
+// 		console.error("Failed to fetch 'Pre Owned' figures:", error);
+// 		res.status(500).send({ error: "Failed to fetch 'Pre Owned' figures" });
+// 	}
+// });
 
 router.get("/with_offer", async (req, res) => {
 	try {
