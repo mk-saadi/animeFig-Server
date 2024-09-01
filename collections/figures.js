@@ -232,7 +232,23 @@ router.get("/with_offer", async (req, res) => {
 			.limit(9)
 			.toArray(); // Convert the cursor to an array
 
-		res.send(figuresWithOffer);
+		const additionalFigures = await figureCollection
+			.find({ label: "Pre Owned" })
+			.sort({ _id: -1 })
+			.skip(9) // Skip the first 9 items to get the next 4
+			.limit(4)
+			.project({
+				_id: 1,
+				images: { $slice: 1 }, // Only include the first image in the response
+			})
+			.toArray();
+
+		const combinedResult = {
+			figuresWithOffer,
+			additionalFigures,
+		};
+
+		res.send(combinedResult);
 	} catch (error) {
 		console.error("Failed to fetch figures with offer:", error);
 		res.status(500).send({ error: "Failed to fetch figures with offer" });
