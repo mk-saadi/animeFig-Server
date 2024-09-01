@@ -54,7 +54,6 @@ router.get("/features", async (req, res) => {
 
 router.get("/latest_figures", async (req, res) => {
 	try {
-		// Fetch the latest 10 items from the figureCollection
 		const detailedFigures = await figureCollection
 			.find(
 				{},
@@ -79,15 +78,14 @@ router.get("/latest_figures", async (req, res) => {
 		const additionalFigures = await figureCollection
 			.find()
 			.sort({ _id: -1 })
-			.skip(15) // Skip the first 9 items to get the next 4
+			.skip(15)
 			.limit(4)
 			.project({
 				_id: 1,
-				images: { $slice: 1 }, // Only include the first image in the response
+				images: { $slice: 1 },
 			})
 			.toArray();
 
-		// Combine the two sets of results
 		const combinedResult = {
 			detailedFigures,
 			additionalFigures,
@@ -100,24 +98,8 @@ router.get("/latest_figures", async (req, res) => {
 	}
 });
 
-// router.get("/coming_soon", async (req, res) => {
-// 	try {
-// 		// Fetch items with the label "Coming Soon"
-// 		const comingSoonFigures = await figureCollection
-// 			.find({ label: "Coming Soon" }) // Query to find items with the "Coming Soon" label
-// 			.sort({ _id: -1 })
-// 			.limit(9)
-// 			.toArray(); // Convert the cursor to an array
-
-// 		res.send(comingSoonFigures);
-// 	} catch (error) {
-// 		console.error("Failed to fetch 'Coming Soon' figures:", error);
-// 		res.status(500).send({ error: "Failed to fetch 'Coming Soon' figures" });
-// 	}
-// });
 router.get("/coming_soon", async (req, res) => {
 	try {
-		// Fetch 9 items with full details
 		const detailedFigures = await figureCollection
 			.find({ label: "Coming Soon" })
 			.sort({ _id: -1 })
@@ -135,25 +117,22 @@ router.get("/coming_soon", async (req, res) => {
 			})
 			.toArray();
 
-		// Fetch 4 additional items with only the first image
 		const additionalFigures = await figureCollection
 			.find({ label: "Coming Soon" })
 			.sort({ _id: -1 })
-			.skip(9) // Skip the first 9 items to get the next 4
+			.skip(9)
 			.limit(4)
 			.project({
 				_id: 1,
-				images: { $slice: 1 }, // Only include the first image in the response
+				images: { $slice: 1 },
 			})
 			.toArray();
 
-		// Combine the two sets of results
 		const combinedResult = {
 			detailedFigures,
 			additionalFigures,
 		};
 
-		// Send the combined result
 		res.send(combinedResult);
 	} catch (error) {
 		console.error("Failed to fetch 'Coming Soon' figures:", error);
@@ -163,7 +142,6 @@ router.get("/coming_soon", async (req, res) => {
 
 router.get("/pre_owned", async (req, res) => {
 	try {
-		// Fetch 9 items with full details
 		const detailedFigures = await figureCollection
 			.find({ label: "Pre Owned" })
 			.sort({ _id: -1 })
@@ -181,25 +159,22 @@ router.get("/pre_owned", async (req, res) => {
 			})
 			.toArray();
 
-		// Fetch 4 additional items with only the first image
 		const additionalFigures = await figureCollection
 			.find({ label: "Pre Owned" })
 			.sort({ _id: -1 })
-			.skip(9) // Skip the first 9 items to get the next 4
+			.skip(9)
 			.limit(4)
 			.project({
 				_id: 1,
-				images: { $slice: 1 }, // Only include the first image in the response
+				images: { $slice: 1 },
 			})
 			.toArray();
 
-		// Combine the two sets of results
 		const combinedResult = {
 			detailedFigures,
 			additionalFigures,
 		};
 
-		// Send the combined result
 		res.send(combinedResult);
 	} catch (error) {
 		console.error("Failed to fetch 'Coming Soon' figures:", error);
@@ -207,39 +182,22 @@ router.get("/pre_owned", async (req, res) => {
 	}
 });
 
-// router.get("/pre_owned", async (req, res) => {
-// 	try {
-// 		// Fetch items with the label "Pre Owned"
-// 		const ownedFigures = await figureCollection
-// 			.find({ label: "Pre Owned" }) // Query to find items with the "Pre Owned" label
-// 			.sort({ _id: -1 })
-// 			.limit(9)
-// 			.toArray(); // Convert the cursor to an array
-
-// 		res.send(ownedFigures);
-// 	} catch (error) {
-// 		console.error("Failed to fetch 'Pre Owned' figures:", error);
-// 		res.status(500).send({ error: "Failed to fetch 'Pre Owned' figures" });
-// 	}
-// });
-
 router.get("/with_offer", async (req, res) => {
 	try {
-		// Fetch items that have a defined offer (offer is not null)
 		const figuresWithOffer = await figureCollection
-			.find({ offer: { $ne: null } }) // Query to find items with a non-null offer
+			.find({ offer: { $ne: null } })
 			.sort({ _id: -1 })
 			.limit(9)
-			.toArray(); // Convert the cursor to an array
+			.toArray();
 
 		const additionalFigures = await figureCollection
 			.find({ label: "Pre Owned" })
 			.sort({ _id: -1 })
-			.skip(9) // Skip the first 9 items to get the next 4
+			.skip(9)
 			.limit(4)
 			.project({
 				_id: 1,
-				images: { $slice: 1 }, // Only include the first image in the response
+				images: { $slice: 1 },
 			})
 			.toArray();
 
@@ -295,14 +253,12 @@ router.get("/similar_series", async (req, res) => {
 			return res.status(400).send({ error: "Figure link is required" });
 		}
 
-		// Find the current figure based on the link
 		const currentFigure = await figureCollection.findOne({ link });
 
 		if (!currentFigure) {
 			return res.status(404).send({ error: "Figure not found" });
 		}
 
-		// Find similar figures based on the series, excluding the current figure
 		const similarFigures = await figureCollection
 			.find(
 				{
@@ -344,19 +300,17 @@ router.get("/similar_characters", async (req, res) => {
 			return res.status(400).send({ error: "Character link is required" });
 		}
 
-		// Find the current character based on the link
 		const currentCharacter = await figureCollection.findOne({ link });
 
 		if (!currentCharacter) {
 			return res.status(404).send({ error: "Character not found" });
 		}
 
-		// Find similar characters based on the series, excluding the current character
 		const similarCharacters = await figureCollection
 			.find(
 				{
 					character: currentCharacter.character,
-					link: { $ne: currentCharacter.link }, // Exclude the current character
+					link: { $ne: currentCharacter.link },
 				},
 				{
 					projection: {
@@ -463,23 +417,7 @@ router.post("/:productId/comments", async (req, res) => {
 });
 
 /* ------------------------ like or dislike a comment ----------------------- */
-// router.patch("/:productId/comments/:commentId", async (req, res) => {
-// 	const figId = req.params.productId;
-// 	const commentId = req.params.commentId;
-// 	const { like } = req.body;
 
-// 	const figs = await figureCollection.findOne({ _id: new ObjectId(figId) });
-// 	if (!figs) {
-// 		return res.status(404).send({ message: "Product not found" });
-// 	}
-
-// 	const result = await figureCollection.updateOne(
-// 		{ _id: new ObjectId(figId), "comments._id": new ObjectId(commentId) },
-// 		{ $set: { "comments.$.like": like } }
-// 	);
-
-// 	res.send(result);
-// });
 router.post("/:productId/comments/:commentId/react", async (req, res) => {
 	const { productId, commentId } = req.params;
 	const { userId, action } = req.body;
@@ -632,6 +570,7 @@ router.get("/all-filters", async (req, res) => {
 	}
 });
 
+// TODO: get this done before deploy
 router.get("/form_value", async (req, res) => {
 	try {
 		const cursor = figureCollection.find(
