@@ -244,6 +244,39 @@ router.get("/series", async (req, res) => {
 	}
 });
 
+router.get("/character", async (req, res) => {
+	try {
+		const seriesFigures = await figureCollection
+			.aggregate([
+				{
+					$group: {
+						_id: "$character",
+						doc: { $first: "$$ROOT" },
+					},
+				},
+				{
+					$replaceRoot: { newRoot: "$doc" },
+				},
+				{
+					$project: {
+						_id: 1,
+						images: { $slice: ["$images", 1] },
+						character: 1,
+					},
+				},
+			])
+			.sort({ _id: -1 })
+			.skip(10)
+			.limit(5)
+			.toArray();
+
+		res.send(seriesFigures);
+	} catch (error) {
+		console.error("Failed to fetch figures by character:", error);
+		res.status(500).send({ error: "Failed to fetch figures by character" });
+	}
+});
+
 /* --------------------------- get similar figures -------------------------- */
 router.get("/similar_series", async (req, res) => {
 	try {
