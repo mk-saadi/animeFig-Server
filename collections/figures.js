@@ -234,7 +234,9 @@ router.get("/series", async (req, res) => {
 					},
 				},
 			])
-			.sort({ _id: -1 })
+			.sort({ _id: 1 })
+			// .skip()
+			.limit(8)
 			.toArray();
 
 		res.send(seriesFigures);
