@@ -246,6 +246,37 @@ router.get("/series", async (req, res) => {
 	}
 });
 
+router.get("/series_home", async (req, res) => {
+	try {
+		const seriesFigures = await figureCollection
+			.aggregate([
+				{
+					$group: {
+						_id: "$series",
+						doc: { $first: "$$ROOT" },
+					},
+				},
+				{
+					$replaceRoot: { newRoot: "$doc" },
+				},
+				{
+					$project: {
+						_id: 1,
+						images: { $slice: ["$images", 1] },
+						series: 1,
+					},
+				},
+			])
+			.sort({ _id: 1 })
+			.toArray();
+
+		res.send(seriesFigures);
+	} catch (error) {
+		console.error("Failed to fetch figures by series:", error);
+		res.status(500).send({ error: "Failed to fetch figures by series" });
+	}
+});
+
 router.get("/character", async (req, res) => {
 	try {
 		const seriesFigures = await figureCollection
