@@ -34,7 +34,7 @@ const verifyJWT = (req, res, next) => {
 // 	next();
 // };
 
-router.post("/create-payment-intent",  async (req, res) => {
+router.post("/create-payment-intent", async (req, res) => {
 	const { grandTotal } = req.body;
 	const amount = parseInt(grandTotal * 100);
 	const paymentIntent = await stripe.paymentIntents.create({
@@ -47,7 +47,7 @@ router.post("/create-payment-intent",  async (req, res) => {
 	});
 });
 
-router.post("/payments_history",  async (req, res) => {
+router.post("/payments_history", async (req, res) => {
 	const { email, transactionId, grandTotal, date, quantity, orderStatus, cartItems } = req.body;
 
 	// Transform the cartItems into the desired orderedFigs structure
@@ -81,26 +81,52 @@ router.get("/", verifyJWT, async (req, res) => {
 	res.send(result);
 });
 
-router.get("/user-payments", verifyJWT, async (req, res) => {
+// router.get("/user-payments", verifyJWT, async (req, res) => {
+// 	try {
+// 		// The email should now be available in req.decoded
+// 		const userEmail = req.decoded.email;
+
+// 		// Find the user in the usersCollection
+// 		const user = await usersCollection.findOne({ email: userEmail });
+
+// 		if (!user) {
+// 			return res.status(404).send({ message: "User not found" });
+// 		}
+
+// 		// Use the user's _id to find their payments
+// 		const cursor = paymentCollection.find({ userId: user._id });
+// 		const result = await cursor.toArray();
+
+// 		res.send(result);
+// 	} catch (error) {
+// 		console.error("Error fetching user payments:", error);
+// 		res.status(500).send({ message: "Error fetching payment history" });
+// 	}
+// });
+
+// router.get("/user_payments" , async (req, res) => {
+// 	const cursor = paymentCollection.find();
+// 	const result = await cursor.toArray();
+// 	res.send(result);
+// });
+router.get("/user_payments", verifyJWT, async (req, res) => {
 	try {
-		// The email should now be available in req.decoded
-		const userEmail = req.decoded.email;
+		const { email } = req.query;
+		console.log("email: ", email);
 
-		// Find the user in the usersCollection
-		const user = await usersCollection.findOne({ email: userEmail });
-
-		if (!user) {
-			return res.status(404).send({ message: "User not found" });
+		if (!email) {
+			return res.status(400).json({ error: "Email is required" });
 		}
 
-		// Use the user's _id to find their payments
-		const cursor = paymentCollection.find({ userId: user._id });
-		const result = await cursor.toArray();
+		// const db = req.app.get("db");
+		// const paymentCollection = db.collection("paymentCollection");
 
-		res.send(result);
+		const userPayments = await paymentCollection.find({ email: email }).toArray();
+
+		res.json(userPayments);
 	} catch (error) {
 		console.error("Error fetching user payments:", error);
-		res.status(500).send({ message: "Error fetching payment history" });
+		res.status(500).json({ error: "Internal server error" });
 	}
 });
 
