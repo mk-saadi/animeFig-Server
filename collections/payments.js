@@ -81,45 +81,13 @@ router.get("/", verifyJWT, async (req, res) => {
 	res.send(result);
 });
 
-// router.get("/user-payments", verifyJWT, async (req, res) => {
-// 	try {
-// 		// The email should now be available in req.decoded
-// 		const userEmail = req.decoded.email;
-
-// 		// Find the user in the usersCollection
-// 		const user = await usersCollection.findOne({ email: userEmail });
-
-// 		if (!user) {
-// 			return res.status(404).send({ message: "User not found" });
-// 		}
-
-// 		// Use the user's _id to find their payments
-// 		const cursor = paymentCollection.find({ userId: user._id });
-// 		const result = await cursor.toArray();
-
-// 		res.send(result);
-// 	} catch (error) {
-// 		console.error("Error fetching user payments:", error);
-// 		res.status(500).send({ message: "Error fetching payment history" });
-// 	}
-// });
-
-// router.get("/user_payments" , async (req, res) => {
-// 	const cursor = paymentCollection.find();
-// 	const result = await cursor.toArray();
-// 	res.send(result);
-// });
 router.get("/user_payments", verifyJWT, async (req, res) => {
 	try {
 		const { email } = req.query;
-		console.log("email: ", email);
 
 		if (!email) {
 			return res.status(400).json({ error: "Email is required" });
 		}
-
-		// const db = req.app.get("db");
-		// const paymentCollection = db.collection("paymentCollection");
 
 		const userPayments = await paymentCollection.find({ email: email }).toArray();
 
