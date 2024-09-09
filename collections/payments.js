@@ -98,4 +98,25 @@ router.get("/user_payments", verifyJWT, async (req, res) => {
 	}
 });
 
+router.get("/user_payment", verifyJWT, async (req, res) => {
+	try {
+		const { _id } = req.query;
+		console.log("_id: ", _id);
+
+		if (!_id) {
+			return res.status(400).json({ error: "Id is required" });
+		}
+
+		const objectId = new ObjectId(_id);
+
+		const userPayments = await paymentCollection.find({ _id: objectId }).toArray();
+		console.log("userPayments: ", userPayments);
+
+		res.json(userPayments);
+	} catch (error) {
+		console.error("Error fetching user payments:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+});
+
 module.exports = router;
