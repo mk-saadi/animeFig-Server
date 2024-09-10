@@ -48,7 +48,7 @@ router.post("/create-payment-intent", async (req, res) => {
 });
 
 router.post("/payments_history", async (req, res) => {
-	const { email, transactionId, grandTotal, date, quantity, orderStatus, cartItems } = req.body;
+	const { email, transactionId, grandTotal, date, quantity, orderStatus, cartItems, zoneDetail } = req.body;
 
 	// Transform the cartItems into the desired orderedFigs structure
 	const orderedFigs = cartItems.map((item) => ({
@@ -69,6 +69,7 @@ router.post("/payments_history", async (req, res) => {
 		quantity,
 		orderStatus,
 		orderedFigs,
+		zoneDetail,
 	};
 
 	const result = await paymentCollection.insertOne(paymentRecord);
