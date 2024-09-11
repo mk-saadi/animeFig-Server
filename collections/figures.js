@@ -701,16 +701,29 @@ const updateLabels = async () => {
 		const figures = await figureCollection.find().toArray();
 
 		for (const figure of figures) {
+			const releaseDate = new Date(figure.release);
+			const currentDate = new Date();
+
+			const releaseDateUTC = Date.UTC(
+				releaseDate.getFullYear(),
+				releaseDate.getMonth(),
+				releaseDate.getDate()
+			);
+			const currentDateUTC = Date.UTC(
+				currentDate.getFullYear(),
+				currentDate.getMonth(),
+				currentDate.getDate()
+			);
+
 			if (figure.quantity === 0) {
 				figure.label = "Out Of Stock";
-			} else if (figure.label === "Coming Soon" && figure.release <= new Date()) {
+			} else if (figure.label === "Coming Soon" && releaseDateUTC <= currentDateUTC) {
 				figure.label = figure.quantity > 0 ? "Brand New" : "Out Of Stock";
 			}
 			// else if (figure.label === "Brand New" && figure.quantity < 10) {
 			// 	figure.label = "Limited";
 			// }
 
-			// Update the figure in the collection
 			await figureCollection.updateOne({ _id: figure._id }, { $set: { label: figure.label } });
 		}
 
@@ -719,7 +732,8 @@ const updateLabels = async () => {
 		console.error("Error updating labels:", error);
 	}
 };
-/* ----- Run the updateLabels function every hour (3600000 milliseconds) ---- */
-setInterval(updateLabels, 3600000);
+
+// Run the updateLabels function every hour (3600000 milliseconds)
+setInterval(updateLabels, 60000);
 
 module.exports = router;
