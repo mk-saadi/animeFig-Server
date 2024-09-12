@@ -234,7 +234,7 @@ router.get("/series", async (req, res) => {
 					},
 				},
 			])
-			.sort({ _id: 1 })
+			// .sort({ _id: 1 })
 			// .skip()
 			.limit(8)
 			.toArray();
@@ -734,6 +734,6 @@ const updateLabels = async () => {
 };
 
 // Run the updateLabels function every hour (3600000 milliseconds)
-setInterval(updateLabels, 60000);
+setInterval(updateLabels, 3600000);
 
 module.exports = router;

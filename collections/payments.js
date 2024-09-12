@@ -90,7 +90,7 @@ router.get("/user_payments", verifyJWT, async (req, res) => {
 			return res.status(400).json({ error: "Email is required" });
 		}
 
-		const userPayments = await paymentCollection.find({ email: email }).toArray();
+		const userPayments = await paymentCollection.find({ email: email }).sort({ _id: 1 }).toArray();
 
 		res.json(userPayments);
 	} catch (error) {
