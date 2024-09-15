@@ -119,4 +119,11 @@ router.get("/user_payment", verifyJWT, async (req, res) => {
 	}
 });
 
+router.delete("/:id", async (req, res) => {
+	const id = req.params.id;
+	const query = { _id: new ObjectId(id) };
+	const result = await paymentCollection.deleteOne(query);
+	res.send(result);
+});
+
 module.exports = router;
