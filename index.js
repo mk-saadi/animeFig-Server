@@ -46,6 +46,16 @@ async function run() {
 		const usersCollection = client.db("animeFig").collection("users");
 		const categoryCollection = client.db("animeFig").collection("categories");
 
+		// middleware
+		app.post("/jwt", (req, res) => {
+			const user = req.body;
+			const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+				expiresIn: "10h",
+			});
+
+			res.send({ token });
+		});
+
 		const verifyGeneralAdmin = async (req, res, next) => {
 			const email = req.decoded.email;
 			const query = { email: email };
